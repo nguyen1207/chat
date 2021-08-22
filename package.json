@@ -1,0 +1,30 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "description": "room chat",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "devStart": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nguyen1207/chat.git"
+  },
+  "keywords": [
+    "chat"
+  ],
+  "author": "nguyen1207",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nguyen1207/chat/issues"
+  },
+  "homepage": "https://github.com/nguyen1207/chat#readme",
+  "dependencies": {
+    "ejs": "^3.1.6",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
