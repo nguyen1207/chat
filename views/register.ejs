@@ -1,0 +1,41 @@
+<form id="register" method="POST">
+	<h3 id="error"></h3>
+	<input type="text" name="username" id="username" placeholder="Username">
+	<input type="text" name="password" id="password" placeholder="Password">
+	<input type="submit" id="submit" value="Register">
+</form>
+
+<script>
+	const registerForm = document.querySelector("#register");
+
+	registerForm.addEventListener("submit", async e => {
+		e.preventDefault();
+		const username = document.querySelector("#username").value;
+		const password = document.querySelector("#password").value;
+		const errorElement = document.querySelector("#error");
+		const submitBtn = document.querySelector("#submit");
+
+		submitBtn.disabled = true;
+		errorElement.textContent = '';
+		
+		// Send data to validate
+		const res = await fetch("/register", {
+			method: 'POST',
+			headers: { 
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ username, password })
+		});
+		
+		const data = await res.json();
+
+		if(data.error) {
+			errorElement.textContent = data.error;
+			submitBtn.disabled = false;
+		}
+		else {
+			location.assign(`/`);
+		}
+
+	})
+</script>
