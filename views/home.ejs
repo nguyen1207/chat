@@ -1,1 +1,14 @@
-<h2>Hello world</h2>
+<h2>Hello <%- username %>
+</h2>
+<form id="logout" action="/logout" method="POST">
+	<input id="submit" type="submit" value="Log out">
+</form>
+
+<script>
+	const logoutForm = document.querySelector("#logout");
+	const submitBtn = document.querySelector("#submit");
+
+	logoutForm.addEventListener("submit", e => {
+		submitBtn.disabled = true;
+	})
+</script>

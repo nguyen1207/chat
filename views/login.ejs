@@ -1,16 +1,15 @@
-<h2>Register</h2>
-<form id="register" method="POST">
+<h2>Login</h2>
+<form id="login" method="POST">
 	<h3 id="error"></h3>
 	<input type="text" name="username" id="username" placeholder="Username">
 	<input type="password" name="password" id="password" placeholder="Password">
-	<input type="submit" id="submit" value="Register">
+	<input type="submit" id="submit" value="Login">
 </form>
-<a href="/login">Log in</a>
+<a href="/register">Register</a>
 
 <script>
-	const registerForm = document.querySelector("#register");
-
-	registerForm.addEventListener("submit", async e => {
+	const loginForm = document.querySelector("#login");
+	loginForm.addEventListener("submit", async e => {
 		e.preventDefault();
 		const username = document.querySelector("#username").value;
 		const password = document.querySelector("#password").value;
@@ -19,25 +18,23 @@
 
 		submitBtn.disabled = true;
 		errorElement.textContent = '';
-		
-		// Send data to validate
-		const res = await fetch("/register", {
-			method: 'POST',
-			headers: { 
-				'Content-Type': 'application/json'
+
+		const response = await fetch("/login", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({ username, password })
 		});
-		
-		const data = await res.json();
+
+		const data = await response.json();
 
 		if(data.error) {
 			errorElement.textContent = data.error;
 			submitBtn.disabled = false;
 		}
 		else {
-			location.assign("/login");
+			location.assign("/");
 		}
-
 	})
 </script>

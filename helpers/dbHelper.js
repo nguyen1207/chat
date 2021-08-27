@@ -7,4 +7,11 @@ function insertPerson(username, password) {
     });
 }
 
-module.exports = { insertPerson };
+function findPerson(username) {
+    return db.query({
+        text: "SELECT * FROM person WHERE username = $1",
+        values: [username],
+    });
+}
+
+module.exports = { insertPerson, findPerson };
