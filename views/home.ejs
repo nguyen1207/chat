@@ -1,14 +1,104 @@
 <h2>Hello <%- username %>
 </h2>
+<div id="joined-room">
+	<h4>Joined room</h4>
+	<% if(rooms.length != 0) { %>
+		<ul>
+			<% rooms.forEach(function (room){ %>
+				<li>
+					<a href="/<%- room.roomid%>"><%- room.room_name %></a>
+				</li>
+			<% }); %>
+		</ul>
+	<% }; %>
+</div>
 <form id="logout" action="/logout" method="POST">
 	<input id="submit" type="submit" value="Log out">
 </form>
+<form id="join-room-form" action="/join" method="POST">
+	<h2 id="join-error"></h2>
+	<input id="roomId" type="text" name="roomId" placeholder="Room ID">
+	<input id="submit-join-room-form" type="submit" value="Join room">
+</form>
+<button id="open-create-room-form">Create room</button>
+<form id="create-room-form" action="/create" method="POST" hidden>
+	<h2 id="create-error"></h2>
+	<input id="roomName" type="text" name="roomName" placeholder="Room name">
+	<input id="submit-create-room-form" type="submit" value="Create room">
+</form>
 
 <script>
-	const logoutForm = document.querySelector("#logout");
-	const submitBtn = document.querySelector("#submit");
+	const logoutBtn = document.querySelector("#submit");
 
-	logoutForm.addEventListener("submit", e => {
-		submitBtn.disabled = true;
+	const submitJoinRoomFormBtn = document.querySelector("#submit-join-room-form");
+	const joinRoomForm = document.querySelector("#join-room-form");
+	const joinRoomErrorElement = document.querySelector("#join-error");
+
+	const openCreateRoomFormBtn = document.querySelector("#open-create-room-form");
+	const submitCreateRoomFormBtn = document.querySelector("#submit-create-room-form");
+	const createRoomForm = document.querySelector("#create-room-form");
+	const createRoomErrorElement = document.querySelector("#create-error");
+
+	// JOIN ROOM
+	joinRoomForm.addEventListener("submit",async function(e) {
+		e.preventDefault();
+		const roomId = document.querySelector("#roomId").value.trim();
+		disableButtons(true);
+		
+		if(!roomId) {
+			joinRoomErrorElement.textContent = "Please enter room id";
+			disableButtons(false);
+			return;
+		}
+
+		try {
+			const response = await fetch("/join", {
+				method: "POST",
+				headers: {"Content-Type" : "application/json"},
+				body: JSON.stringify({roomId}),
+			})
+			
+			const data = await response.json();
+			
+			if(data.error) {
+				joinRoomErrorElement.textContent = data.error;
+				disableButtons(false);
+			}
+			else {
+				location.assign(`/${data.roomid}`);
+			}
+
+		}
+		catch(err) {	
+			console.log(err);
+		}
+	
 	})
+
+
+	// CREATE ROOM
+	openCreateRoomFormBtn.onclick = function () {
+		openCreateRoomFormBtn.hidden = true;
+		createRoomForm.hidden = false;
+	}
+	createRoomForm.addEventListener("submit", function(e) {
+		e.preventDefault();
+		const roomName = document.querySelector("#roomName").value.trim();
+		disableButtons(true);
+		
+		if(!roomName) {
+			createRoomErrorElement.textContent = "Please enter room name";
+			disableButtons(false);
+			return;
+		}
+
+		this.submit();
+	})
+
+	function disableButtons(isDisabled) {
+		submitJoinRoomFormBtn.disabled = isDisabled;
+		openCreateRoomFormBtn.disabled = isDisabled;
+		submitCreateRoomFormBtn.disabled = isDisabled;
+		logoutBtn.disabled = isDisabled;
+	}
 </script>

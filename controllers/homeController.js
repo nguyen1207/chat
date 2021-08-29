@@ -1,14 +1,27 @@
 const bcrypt = require("bcrypt");
 
-const { insertPerson, findPerson } = require("../helpers/dbHelper.js");
+const {
+    insertPerson,
+    findPerson,
+    createRoom,
+    joinRoom,
+    getJoinedRoom,
+    findRoom,
+    leaveRoom,
+} = require("../helpers/dbHelper.js");
 
 module.exports = {
     // GET /
     home(req, res, next) {
-        //console.log(req.session.username)
-        res.render("home.ejs", {
-            title: "Chatdee",
-            username: req.session.username,
+        const username = req.session.username;
+        getJoinedRoom(username).then((data) => {
+            const rooms = data.rows;
+
+            res.render("home.ejs", {
+                rooms,
+                title: "Chatdee",
+                username,
+            });
         });
     },
 
@@ -74,29 +87,31 @@ module.exports = {
             return res.status(400).json({ error: "Please enter both fields" });
         }
 
-        const data = await findPerson(username);
-        const person = data.rows[0];
+        try {
+            const data = await findPerson(username);
+            const person = data.rows[0];
 
-        // Validate username
-        if (!person) {
-            return res
-                .status(400)
-                .json({ error: "Username or password is invalid" });
+            // Validate username
+            if (!person) {
+                return res
+                    .status(400)
+                    .json({ error: "Username or password is invalid" });
+            }
+
+            // Validate password
+            const isMatch = await bcrypt.compare(password, person.password);
+
+            if (!isMatch) {
+                return res
+                    .status(400)
+                    .json({ error: "Username or password is invalid" });
+            }
+
+            req.session.username = person.username;
+            res.status(200).json({ message: "success" });
+        } catch (err) {
+            res.status(500).json({ error: "Login error" });
         }
-
-        // Validate password
-        const isMatch = await bcrypt.compare(password, person.password);
-
-        if (!isMatch) {
-            return res
-                .status(400)
-                .json({ error: "Username or password is invalid" });
-        }
-
-        // TODO STORE SESSION AND SEND COOKIE
-        req.session.username = person.username;
-
-        res.status(200).json({ message: "success" });
     },
 
     // POST /logout
@@ -107,5 +122,70 @@ module.exports = {
             }
             res.redirect("/login");
         });
+    },
+
+    // POST /create
+    async create(req, res, next) {
+        const username = req.session.username;
+        const roomName = req.body.roomName.trim();
+
+        try {
+            const room = await createRoom(roomName);
+            const data = await joinRoom(username, room.roomid, true);
+
+            res.redirect(`/${room.roomid}`);
+        } catch (err) {
+            res.status(500).json({ error: "Create room error" });
+        }
+    },
+
+    // POST /join
+    async join(req, res, next) {
+        try {
+            const username = req.session.username;
+            const roomId = req.body.roomId.trim();
+
+            const room = await joinRoom(username, roomId);
+
+            res.json(room);
+        } catch (err) {
+            console.log(err);
+            res.status(400).json({ error: err.message });
+        }
+    },
+
+    // GET /:roomId
+    async room(req, res, next) {
+        try {
+            const roomId = req.params.roomId;
+            const room = await findRoom(roomId);
+
+            if (room) {
+                return res.render("room.ejs", {
+                    title: "Chatdee",
+                    room,
+                });
+            }
+
+            res.status(404).json({ error: "Not found room" });
+        } catch (err) {
+            console.log(err);
+            res.status(500).json(err);
+        }
+    },
+
+    // POST /leave
+    leave(req, res, next) {
+        const username = req.session.username;
+        const roomId = req.body.roomId;
+
+        leaveRoom(username, roomId)
+            .then(() => {
+                return res.redirect("/");
+            })
+            .catch((err) => {
+                console.log(err);
+                res.status(500).json({ error: "Leave room error" });
+            });
     },
 };

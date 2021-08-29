@@ -20,23 +20,28 @@
 		submitBtn.disabled = true;
 		errorElement.textContent = '';
 		
-		// Send data to validate
-		const res = await fetch("/register", {
-			method: 'POST',
-			headers: { 
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ username, password })
-		});
-		
-		const data = await res.json();
-
-		if(data.error) {
-			errorElement.textContent = data.error;
-			submitBtn.disabled = false;
+		try {
+			// Send data to validate
+			const res = await fetch("/register", {
+				method: 'POST',
+				headers: { 
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ username, password })
+			});
+			
+			const data = await res.json();
+	
+			if(data.error) {
+				errorElement.textContent = data.error;
+				submitBtn.disabled = false;
+			}
+			else {
+				location.assign("/login");
+			}
 		}
-		else {
-			location.assign("/login");
+		catch(err) {
+			console.log(err);
 		}
 
 	})

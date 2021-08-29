@@ -18,23 +18,28 @@
 
 		submitBtn.disabled = true;
 		errorElement.textContent = '';
-
-		const response = await fetch("/login", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ username, password })
-		});
-
-		const data = await response.json();
-
-		if(data.error) {
-			errorElement.textContent = data.error;
-			submitBtn.disabled = false;
+		
+		try {
+			const response = await fetch("/login", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ username, password })
+			});
+	
+			const data = await response.json();
+	
+			if(data.error) {
+				errorElement.textContent = data.error;
+				submitBtn.disabled = false;
+			}
+			else {
+				location.assign("/");
+			}
 		}
-		else {
-			location.assign("/");
+		catch (err) {
+			console.log(err);
 		}
 	})
 </script>
