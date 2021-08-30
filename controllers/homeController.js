@@ -8,6 +8,7 @@ const {
     getJoinedRoom,
     findRoom,
     leaveRoom,
+    deleteEmptyRoom,
 } = require("../helpers/dbHelper.js");
 
 module.exports = {
@@ -180,6 +181,9 @@ module.exports = {
         const roomId = req.body.roomId;
 
         leaveRoom(username, roomId)
+            .then(() => {
+                return deleteEmptyRoom();
+            })
             .then(() => {
                 return res.redirect("/");
             })

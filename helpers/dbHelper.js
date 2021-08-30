@@ -118,4 +118,10 @@ function leaveRoom(username, roomId) {
     })
 }
 
-module.exports = { insertPerson, findPerson, createRoom, joinRoom, getJoinedRoom, findRoom, leaveRoom };
+function deleteEmptyRoom() {
+    return db.query({
+        text: "DELETE FROM room WHERE roomid NOT IN ( SELECT roomid FROM in_room )",
+    })
+}
+
+module.exports = { insertPerson, findPerson, createRoom, joinRoom, getJoinedRoom, findRoom, leaveRoom, deleteEmptyRoom };
