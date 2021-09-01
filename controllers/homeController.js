@@ -165,6 +165,7 @@ module.exports = {
                 return res.render("room.ejs", {
                     title: "Chatdee",
                     room,
+                    username: req.session.username,
                 });
             }
 

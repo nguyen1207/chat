@@ -124,4 +124,28 @@ function deleteEmptyRoom() {
     })
 }
 
-module.exports = { insertPerson, findPerson, createRoom, joinRoom, getJoinedRoom, findRoom, leaveRoom, deleteEmptyRoom };
+function loadOldMessages(roomId) {
+    return db.query({
+        text: "SELECT username, content, sent_at FROM message WHERE roomid = $1 ORDER BY sent_at",
+        values: [roomId],
+    })
+}
+
+function storeMessage(username, roomId, content) {
+    return db.query({
+        text: "INSERT INTO message VALUES ($1, $2, $3) RETURNING *",
+        values: [username, roomId, content],
+    })
+}
+
+module.exports = { 
+    insertPerson, 
+    findPerson, 
+    createRoom, joinRoom, 
+    getJoinedRoom, 
+    findRoom, 
+    leaveRoom, 
+    deleteEmptyRoom, 
+    loadOldMessages, 
+    storeMessage
+};

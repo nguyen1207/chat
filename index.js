@@ -9,6 +9,10 @@ const db = require("./db/dbconfig.js");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
 const route = require("./routes");
+const server = require("http").createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
+const { userJoin, sendMessage } = require("./helpers/chatHelper.js")(io);
 
 app.use(express.json());
 app.use(
@@ -39,6 +43,13 @@ app.use(express.static("public"));
 
 route(app);
 
-app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+const onConnection = function (socket) {
+    socket.on("join", userJoin);
+    socket.on("chat message", sendMessage);
+}
+
+io.on("connection", onConnection);
+
+server.listen(port, function () {
+    console.log("listening on *: " + port);
 });

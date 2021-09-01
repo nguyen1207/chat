@@ -5,3 +5,69 @@
 	<input type="text" name="roomId" id="roomId" value="<%= room.roomid %>" hidden>
 	<input type="submit" value="Leave room">
 </form>
+<div id="chat">
+	<div id="messages"></div>
+	<form id="send-message-form" method="POST">
+		<input type="text" name="message" id="message-input" placeholder="Message" autocomplete="off">
+		<input type="submit" id="send-message" value="Send">
+	</form>
+</div>
+
+<script src="./js/socket.io/socket.io.js"></script>
+<script>
+	const socket = io();
+	const roomid =  "<%- room.roomid %>";
+	const username = "<%- username %>";
+
+	socket.emit("join", {username, roomid})
+
+	const messagesElement = document.querySelector("#messages");
+	const sendMessageForm = document.querySelector("#send-message-form");
+	const messageInput = document.querySelector("#message-input");
+	
+	sendMessageForm.addEventListener("submit", e => {
+		e.preventDefault();
+		const message = messageInput.value.trim();
+
+		if(message) {
+			socket.emit("chat message", {username ,message});
+			messageInput.value = "";
+		}
+	});
+
+	socket.on('chat message', function(messageObj) {
+		const time = new Date(messageObj.sent_at);
+		const username = messageObj.username;
+		const content = messageObj.content;
+
+		const message = `${time} ${username}: ${content}`;
+
+		createMessageElement(message);
+	});
+
+	socket.on("join", messageObjs => {
+		messageObjs.forEach(messageObj => {
+			const time = new Date(messageObj.sent_at);
+			const username = messageObj.username;
+			const content = messageObj.content;
+
+			const message = `${time} ${username}: ${content}`;
+			createMessageElement(message)
+		})
+	})
+
+	socket.on("load old messages error", message => {
+		createMessageElement(message);
+	})
+
+	socket.on("send message error", message => {
+		createMessageElement(message);
+	})
+
+	function createMessageElement(message) {
+		const item = document.createElement('h5');
+		item.textContent = message;
+		messagesElement.appendChild(item);
+	}
+
+</script>
