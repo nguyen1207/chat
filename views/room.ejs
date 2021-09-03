@@ -24,7 +24,7 @@
 	const messagesElement = document.querySelector("#messages");
 	const sendMessageForm = document.querySelector("#send-message-form");
 	const messageInput = document.querySelector("#message-input");
-	
+
 	sendMessageForm.addEventListener("submit", e => {
 		e.preventDefault();
 		const message = messageInput.value.trim();
@@ -40,9 +40,8 @@
 		const username = messageObj.username;
 		const content = messageObj.content;
 
-		const message = `${time} ${username}: ${content}`;
-
-		createMessageElement(message);
+		const formatedTime = formatTime(time);
+		createMessageElement(username, formatedTime, content);
 	});
 
 	socket.on("join", messageObjs => {
@@ -51,23 +50,73 @@
 			const username = messageObj.username;
 			const content = messageObj.content;
 
-			const message = `${time} ${username}: ${content}`;
-			createMessageElement(message)
+			const formatedTime = formatTime(time);
+			createMessageElement(username, formatedTime, content);
 		})
 	})
 
 	socket.on("load old messages error", message => {
-		createMessageElement(message);
+		createMessageElement("", "", message);
 	})
 
 	socket.on("send message error", message => {
-		createMessageElement(message);
+		createMessageElement("", "", message);
 	})
 
-	function createMessageElement(message) {
-		const item = document.createElement('h5');
-		item.textContent = message;
-		messagesElement.appendChild(item);
+	function createMessageElement(username, time, content) {
+		const messageElement = document.createElement("div");
+		const userElement = document.createElement("span");
+		const timeElement = document.createElement("span");
+		const contentElement = document.createElement("p");
+
+		
+		messageElement.className = "message";
+		userElement.className = "username";
+		timeElement.className = "time";
+		contentElement.className = "content";
+		
+		messageElement.appendChild(userElement);
+		messageElement.appendChild(timeElement);
+		messageElement.appendChild(contentElement);
+		
+		userElement.textContent = username;
+		timeElement.textContent = time;
+
+		contentElement.textContent = content;
+
+		messagesElement.appendChild(messageElement);
+	}
+
+	function formatTime(time) {
+		const sentMonth = time.getMonth() + 1;
+		const sentDate = time.getDate();
+		const sentYear = time.getFullYear();
+		const sentHour = time.getHours();
+		const sentMinute = time.getMinutes();
+
+		const now = new Date(Date.now());
+		const currentMonth = now.getMonth() + 1;
+		const currentDate = now.getDate();
+		const currentYear = now.getFullYear();
+
+		if(sentMonth == currentMonth && sentDate == currentDate && sentYear == currentYear) {
+			return `Today at ${padTwoDigits(sentHour)}:${padTwoDigits(sentMinute)}`;
+		}
+		else if(sentMonth == currentMonth && sentDate == currentDate - 1 && sentYear == currentYear) {
+			return `Yesterday at ${padTwoDigits(sentHour)}:${padTwoDigits(sentMinute)}`;
+		}
+		else {
+			return `${padTwoDigits(sentMonth)}/${padTwoDigits(sentDate)}/${sentYear}`;
+		}
+	}
+
+	function padTwoDigits(num) {
+		num = num.toString();
+		while (num.length < 2) {
+			num = "0" + num;
+		}
+
+		return num;
 	}
 
 </script>
