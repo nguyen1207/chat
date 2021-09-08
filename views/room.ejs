@@ -1,16 +1,29 @@
-<a href="/">Back to home</a>
-<h2>ROOM: <%- room.room_name %></h2>
-<h4>Room ID: <%- room.roomid %></h4>
-<form action="/leave" method="POST">
-	<input type="text" name="roomId" id="roomId" value="<%= room.roomid %>" hidden>
-	<input type="submit" value="Leave room">
-</form>
-<div id="chat">
-	<div id="messages"></div>
-	<form id="send-message-form" method="POST">
-		<input type="text" name="message" id="message-input" placeholder="Message" autocomplete="off">
-		<input type="submit" id="send-message" value="Send">
-	</form>
+<link rel="stylesheet" href="./css/room.css">
+<div id="left">
+	<div id="left-header">
+		<a id="back-home" href="/"><i class="fas fa-arrow-circle-left"></i></a>
+	</div>
+	<div id="members" class="text-break">
+		<h5>Members</h5>
+		<hr class="solid">
+	</div>
+</div>
+<div id="right">
+	<div id="chat-header">
+		<h2 class="text-break" id="room-name"><%- room.room_name %></h2>
+		<h4 id="room-id">ID: <%- room.roomid %></h4>
+		<form id="leave" action="/leave" method="POST">
+			<input type="text" name="roomId" id="roomId" value="<%= room.roomid %>" hidden>
+			<input type="submit" class="btn btn-danger" value="Leave room">
+		</form>
+	</div>
+	<div id="chat">
+		<div id="messages"></div>
+		<form id="send-message-form" class="input-group mb-3" method="POST">
+			<input type="text" class="form-control shadow-none" name="message" id="message-input" placeholder="Message" autocomplete="off">
+			<input class="btn btn-primary" type="submit" id="button-addon1" class="send-message" value="Send">
+		</form>
+	</div>
 </div>
 
 <script src="./js/socket.io/socket.io.js"></script>
@@ -42,6 +55,7 @@
 
 		const formatedTime = formatTime(time);
 		createMessageElement(username, formatedTime, content);
+		messagesElement.scrollTop = messagesElement.scrollHeight;
 	});
 
 	socket.on("join", messageObjs => {
@@ -53,6 +67,7 @@
 			const formatedTime = formatTime(time);
 			createMessageElement(username, formatedTime, content);
 		})
+		messagesElement.scrollTop = messagesElement.scrollHeight;
 	})
 
 	socket.on("load old messages error", message => {
@@ -65,24 +80,36 @@
 
 	function createMessageElement(username, time, content) {
 		const messageElement = document.createElement("div");
+		const messageHeader = document.createElement("div");
 		const userElement = document.createElement("span");
 		const timeElement = document.createElement("span");
-		const contentElement = document.createElement("p");
+		const contentElement = document.createElement("div");
+		const p = document.createElement("p");
 
-		
-		messageElement.className = "message";
 		userElement.className = "username";
 		timeElement.className = "time";
-		contentElement.className = "content";
 		
-		messageElement.appendChild(userElement);
-		messageElement.appendChild(timeElement);
+		if (username == "<%- username %>") {
+			messageHeader.appendChild(timeElement);
+			messageHeader.appendChild(userElement);
+			messageElement.className = "message d-flex align-items-end flex-column";
+			contentElement.className = "my-message content text-break";
+		}
+		else {
+			messageHeader.appendChild(userElement);
+			messageHeader.appendChild(timeElement);
+			messageElement.className += "message d-flex align-items-start flex-column";
+			contentElement.className = "not-my-message content text-break";
+		}
+
+		contentElement.appendChild(p);
+		messageElement.appendChild(messageHeader);
 		messageElement.appendChild(contentElement);
 		
 		userElement.textContent = username;
 		timeElement.textContent = time;
 
-		contentElement.textContent = content;
+		p.textContent = content;
 
 		messagesElement.appendChild(messageElement);
 	}

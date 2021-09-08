@@ -1,0 +1,137 @@
+html {
+	height: 100%;
+}
+
+body {
+	display: flex;
+	height: 100%;
+}
+
+::-webkit-scrollbar {
+	width: 7px; height: 0;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.0);
+    border-radius: 10px;
+    box-shadow: rgba(255,255,255,0.3) 0 0 0 1px;
+}
+
+:hover::-webkit-scrollbar-thumb {
+	background: rgba(0,0,0,0.45);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(0,0,0,0.55);
+}
+
+#left {
+	display: flex;
+	flex-direction: column;
+	width: 20%;
+}
+
+#left-header {
+	position: relative;
+	flex: 1;
+}
+
+#back-home {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 36px;
+}
+
+#members {
+	flex: 9;
+	padding-left: 12px;
+	padding-right: 12px;
+}
+
+#right {
+	display: flex;
+	flex-direction: column;
+	width: 80%;
+	border-left: 1px solid;
+	border-color:rgb(119, 117, 117);
+}
+
+#leave {
+	float: right;
+}
+
+#room-name {
+	max-height: 80px;
+	overflow: scroll;
+}
+
+#room-id {
+	float: left;
+	color: rgb(119, 117, 117);
+	font-size: 12px;
+}
+
+#chat-header {
+	padding-left: 16px;
+	padding-right: 16px;
+	flex: 1;
+}
+
+#chat {
+	flex: 9;
+}
+
+#messages {
+	height: 80%;
+	height: 680px;
+	width: 100%;
+    overflow-y: auto;
+    white-space: nowrap;
+	margin-bottom: 12px;
+	padding-left: 4px;
+	padding-right: 4px;
+}
+
+.message {
+	min-height: 80px;
+	padding: 2px;
+}
+
+p {
+	min-width: 30px;
+	max-width: 400px;
+	margin: 0 !important;
+	word-wrap: break-word;
+	white-space: initial
+}
+
+.content {
+	padding: 10px;
+	display: inline-block;
+	border-radius: 40px;
+	text-align: center;
+}
+
+.my-message {
+	color: white;
+	background-color: rgb(0, 132, 255);
+}
+
+.not-my-message {
+	color: black;
+	background-color: rgb(238, 238, 238);
+}
+
+.time {
+	color: rgb(119, 117, 117);
+	font-size: 12px;
+	padding: 8px;
+}
+
+#send-message-form {
+	width: 100%;
+	padding-left: 4px;
+	padding-right: 4px;
+}

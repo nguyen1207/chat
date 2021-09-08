@@ -1,0 +1,87 @@
+::-webkit-scrollbar {
+	width: 7px; height: 0;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.0);
+    border-radius: 10px;
+    box-shadow: rgba(255,255,255,0.3) 0 0 0 1px;
+}
+
+:hover::-webkit-scrollbar-thumb {
+	background: rgba(0,0,0,0.45);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(0,0,0,0.55);
+}
+
+html {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding-bottom: 10%;
+	height: 100%;
+	width: 80%;
+}
+
+#welcome {
+	display: flex;
+}
+
+#welcome h2 {
+	font-size: 24px;
+	color: rgb(91, 92, 94);
+	margin: 0;
+	padding: 8px;
+}
+
+#username {
+	color: cornflowerblue;
+	font-size: 36px;
+	font-weight: bold;
+}
+
+#logout {
+	padding: 12px;
+}
+
+#joined-room {
+	height: 800px;
+	width: 80%;
+	overflow-y: auto;
+}
+
+.room {
+	padding: 12px;
+}
+
+.room-name {
+	padding: 8px;
+}
+
+.room-name:hover {
+	border-radius: 20px;
+	background-color: rgb(223, 221, 221);
+}
+
+.room span {
+	color:rgb(91, 92, 94);
+}
+
+a {
+	min-height: 80px;
+	text-decoration: none;
+}
+
+.error {
+	color: rgb(238, 80, 80);
+}

@@ -1,0 +1,29 @@
+html {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding-bottom: 30%;
+	height: 100%;
+	width: 80%;
+}
+
+input {
+	margin-bottom: 12px;
+}
+
+#error {
+	color: red;
+	font-size: 16px;
+}
+
+#submit {
+	float: right;
+}
