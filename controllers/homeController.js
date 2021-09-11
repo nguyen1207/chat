@@ -9,7 +9,11 @@ const {
     findRoom,
     leaveRoom,
     deleteEmptyRoom,
+    loadOldMessages,
 } = require("../helpers/dbHelper.js");
+
+const { decryptMessage } = require("../utils/encryptMessage.js");
+const formatTime = require("../utils/formatTime.js");
 
 module.exports = {
     // GET /
@@ -161,15 +165,27 @@ module.exports = {
             const roomId = req.params.roomId;
             const room = await findRoom(roomId);
 
-            if (room) {
-                return res.render("room.ejs", {
-                    title: "Chatdee",
-                    room,
-                    username: req.session.username,
+            if (!room) {
+                return res.status(404).json({ error: "Room not found" });
+            }
+
+            const messagesData = await loadOldMessages(roomId);
+            const messageObjs = messagesData.rows;
+
+            if (messageObjs) {
+                messageObjs.forEach((messageObj) => {
+                    const encryptedMessage = messageObj.content;
+                    messageObj.content = decryptMessage(encryptedMessage);
+                    messageObj.sent_at = formatTime(messageObj.sent_at);
                 });
             }
 
-            res.status(404).json({ error: "Not found room" });
+            return res.render("room.ejs", {
+                title: "Chatdee",
+                room,
+                username: req.session.username,
+                messageObjs,
+            });
         } catch (err) {
             console.log(err);
             res.status(500).json(err);

@@ -135,3 +135,11 @@ p {
 	padding-left: 4px;
 	padding-right: 4px;
 }
+
+.error .content {
+	background-color: red;
+}
+
+.error .message-header {
+	color: red;
+}

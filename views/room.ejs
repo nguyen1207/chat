@@ -18,7 +18,31 @@
 		</form>
 	</div>
 	<div id="chat">
-		<div id="messages"></div>
+		<div id="messages">
+			<% messageObjs.forEach( function(messageObj) { %>
+				<% if(messageObj.username ==  username ) { %>
+					<div class="message d-flex align-items-end flex-column">
+						<div class="message-header">
+							<span class="time"><%-messageObj.sent_at %></span>
+							<span class="username"><%-messageObj.username %></span>
+						</div>
+						<div class="my-message content text-break">
+							<p><%-messageObj.content%></p>
+						</div>
+					</div>
+				<% } else { %>
+					<div class="message d-flex align-items-start flex-column">
+						<div class="message-header">
+							<span class="username"><%-messageObj.username %></span>
+							<span class="time"><%-messageObj.sent_at %></span>
+						</div>
+						<div class="not-my-message content text-break">
+							<p><%-messageObj.content%></p>
+						</div>
+					</div>
+				<% } %>
+			<% }); %>
+		</div>
 		<form id="send-message-form" class="input-group mb-3" method="POST">
 			<input type="text" class="form-control shadow-none" name="message" id="message-input" placeholder="Message" autocomplete="off">
 			<input class="btn btn-primary" type="submit" id="button-addon1" class="send-message" value="Send">
@@ -28,122 +52,7 @@
 
 <script src="./js/socket.io/socket.io.js"></script>
 <script>
-	const socket = io();
-	const roomid =  "<%- room.roomid %>";
-	const username = "<%- username %>";
-
-	socket.emit("join", {username, roomid})
-
-	const messagesElement = document.querySelector("#messages");
-	const sendMessageForm = document.querySelector("#send-message-form");
-	const messageInput = document.querySelector("#message-input");
-
-	sendMessageForm.addEventListener("submit", e => {
-		e.preventDefault();
-		const message = messageInput.value.trim();
-
-		if(message) {
-			socket.emit("chat message", {username ,message});
-			messageInput.value = "";
-		}
-	});
-
-	socket.on('chat message', function(messageObj) {
-		const time = new Date(messageObj.sent_at);
-		const username = messageObj.username;
-		const content = messageObj.content;
-
-		const formatedTime = formatTime(time);
-		createMessageElement(username, formatedTime, content);
-		messagesElement.scrollTop = messagesElement.scrollHeight;
-	});
-
-	socket.on("join", messageObjs => {
-		messageObjs.forEach(messageObj => {
-			const time = new Date(messageObj.sent_at);
-			const username = messageObj.username;
-			const content = messageObj.content;
-
-			const formatedTime = formatTime(time);
-			createMessageElement(username, formatedTime, content);
-		})
-		messagesElement.scrollTop = messagesElement.scrollHeight;
-	})
-
-	socket.on("load old messages error", message => {
-		createMessageElement("", "", message);
-	})
-
-	socket.on("send message error", message => {
-		createMessageElement("", "", message);
-	})
-
-	function createMessageElement(username, time, content) {
-		const messageElement = document.createElement("div");
-		const messageHeader = document.createElement("div");
-		const userElement = document.createElement("span");
-		const timeElement = document.createElement("span");
-		const contentElement = document.createElement("div");
-		const p = document.createElement("p");
-
-		userElement.className = "username";
-		timeElement.className = "time";
-		
-		if (username == "<%- username %>") {
-			messageHeader.appendChild(timeElement);
-			messageHeader.appendChild(userElement);
-			messageElement.className = "message d-flex align-items-end flex-column";
-			contentElement.className = "my-message content text-break";
-		}
-		else {
-			messageHeader.appendChild(userElement);
-			messageHeader.appendChild(timeElement);
-			messageElement.className += "message d-flex align-items-start flex-column";
-			contentElement.className = "not-my-message content text-break";
-		}
-
-		contentElement.appendChild(p);
-		messageElement.appendChild(messageHeader);
-		messageElement.appendChild(contentElement);
-		
-		userElement.textContent = username;
-		timeElement.textContent = time;
-
-		p.textContent = content;
-
-		messagesElement.appendChild(messageElement);
-	}
-
-	function formatTime(time) {
-		const sentMonth = time.getMonth() + 1;
-		const sentDate = time.getDate();
-		const sentYear = time.getFullYear();
-		const sentHour = time.getHours();
-		const sentMinute = time.getMinutes();
-
-		const now = new Date(Date.now());
-		const currentMonth = now.getMonth() + 1;
-		const currentDate = now.getDate();
-		const currentYear = now.getFullYear();
-
-		if(sentMonth == currentMonth && sentDate == currentDate && sentYear == currentYear) {
-			return `Today at ${padTwoDigits(sentHour)}:${padTwoDigits(sentMinute)}`;
-		}
-		else if(sentMonth == currentMonth && sentDate == currentDate - 1 && sentYear == currentYear) {
-			return `Yesterday at ${padTwoDigits(sentHour)}:${padTwoDigits(sentMinute)}`;
-		}
-		else {
-			return `${padTwoDigits(sentMonth)}/${padTwoDigits(sentDate)}/${sentYear}`;
-		}
-	}
-
-	function padTwoDigits(num) {
-		num = num.toString();
-		while (num.length < 2) {
-			num = "0" + num;
-		}
-
-		return num;
-	}
-
+	const roomid = "<%- room.roomid %>";
+	const myUsername = "<%- username %>";
 </script>
+<script src="./js/room.js"></script>
