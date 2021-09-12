@@ -138,6 +138,20 @@ function storeMessage(username, roomId, content) {
     })
 }
 
+function loadRoomMembers(roomId) {
+    return db.query({
+        text: "SELECT in_room.username, person.online_status FROM in_room INNER JOIN person ON in_room.username = person.username WHERE in_room.roomid = $1",
+        values: [roomId],
+    })
+}
+
+function setOnlineStatus(username, onlineStatus) {
+    return db.query({
+        text: "UPDATE person SET online_status = $1 WHERE username = $2",
+        values: [onlineStatus, username],
+    })
+}
+
 module.exports = { 
     insertPerson, 
     findPerson, 
@@ -147,5 +161,7 @@ module.exports = {
     leaveRoom, 
     deleteEmptyRoom, 
     loadOldMessages, 
-    storeMessage
+    storeMessage,
+    loadRoomMembers,
+    setOnlineStatus,
 };

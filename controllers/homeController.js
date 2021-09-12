@@ -10,6 +10,7 @@ const {
     leaveRoom,
     deleteEmptyRoom,
     loadOldMessages,
+    loadRoomMembers,
 } = require("../helpers/dbHelper.js");
 
 const { decryptMessage } = require("../utils/encryptMessage.js");
@@ -180,11 +181,15 @@ module.exports = {
                 });
             }
 
+            const membersData = await loadRoomMembers(roomId);
+            const members = membersData.rows;
+
             return res.render("room.ejs", {
                 title: "Chatdee",
                 room,
                 username: req.session.username,
                 messageObjs,
+                members,
             });
         } catch (err) {
             console.log(err);

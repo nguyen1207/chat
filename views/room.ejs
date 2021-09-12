@@ -6,6 +6,30 @@
 	<div id="members" class="text-break">
 		<h5>Members</h5>
 		<hr class="solid">
+		<ul class="list-group list-group-flush">
+			<% members.forEach( function(member) { %>
+				<% if(member.username == username) { %>
+					<li class="list-group-item d-flex justify-content-between align-items-center member" id="<%- member.username %>" style="font-weight: bold;">
+						<%- member.username %>
+						<% if(member.online_status) { %>
+							<i class="fas fa-circle online-status online"></i>
+						<% } else { %>
+							<i class="fas fa-circle online-status"></i>
+						<% }; %>
+					</li>
+				<% } else { %>
+					<li class="list-group-item d-flex justify-content-between align-items-center member" id="<%- member.username %>">
+						<%- member.username %>
+						<% if(member.online_status) { %>
+							<i class="fas fa-circle online-status online"></i>
+						<% } else { %>
+							<i class="fas fa-circle online-status"></i>
+						<% }; %>
+					</li>
+				<% }; %>
+	
+			<% }); %>		
+		</ul>
 	</div>
 </div>
 <div id="right">

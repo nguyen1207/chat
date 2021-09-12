@@ -12,7 +12,7 @@ const route = require("./routes");
 const server = require("http").createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
-const { userJoin, sendMessage } = require("./helpers/chatHelper.js")(io);
+const { userOnline, userOffline, userLeaveRoom, sendMessage } = require("./helpers/chatHelper.js")(io);
 
 app.use(express.json());
 app.use(
@@ -44,7 +44,9 @@ app.use(express.static("public"));
 route(app);
 
 const onConnection = function (socket) {
-    socket.on("join", userJoin);
+    socket.on("online", userOnline);
+    socket.on("disconnect", userOffline);
+    socket.on("user leave room", userLeaveRoom);
     socket.on("chat message", sendMessage);
 }
 

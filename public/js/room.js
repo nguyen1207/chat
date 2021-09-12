@@ -1,10 +1,12 @@
 const socket = io();
 
-socket.emit("join", { username: myUsername, roomid });
+socket.emit("online", { username: myUsername, roomid });
 
 const messagesElement = document.querySelector("#messages");
 const sendMessageForm = document.querySelector("#send-message-form");
 const messageInput = document.querySelector("#message-input");
+const membersElement = document.querySelector(".list-group-flush");
+const leaveRoomForm = document.querySelector("#leave");
 messagesElement.scrollTop = messagesElement.scrollHeight;
 
 sendMessageForm.addEventListener("submit", (e) => {
@@ -14,6 +16,41 @@ sendMessageForm.addEventListener("submit", (e) => {
         socket.emit("chat message", { username: myUsername, message });
         messageInput.value = "";
     }
+});
+
+socket.on("user online", function (username) {
+    let memberElement = document.querySelector(`.member#${username}`);
+
+    // New member join room
+    if (!memberElement) {
+        const memberString = `<li class="list-group-item d-flex justify-content-between align-items-center member" id="${username}">
+                                    ${username}
+                                    <i class="fas fa-circle online-status online"></i>
+                                </li>`;
+        memberElement = htmlToElement(memberString);
+        membersElement.appendChild(memberElement);
+    } else {
+        const onlineStatusElement =
+            memberElement.querySelector(".online-status");
+        onlineStatusElement.className += " online";
+    }
+});
+
+socket.on("user offline", function (username) {
+    const memberElement = document.querySelector(`.member#${username}`);
+
+    // When user leave room disconnect event will also be fired
+    // memberElement is removed when user leave room
+    if (memberElement) {
+        const onlineStatusElement =
+            memberElement.querySelector(".online-status");
+        onlineStatusElement.classList.remove("online");
+    }
+});
+
+socket.on("user leave room", function (username) {
+    const memberElement = document.querySelector(`.member#${username}`);
+    memberElement.remove();
 });
 
 socket.on("chat message", function (messageObj) {
@@ -28,61 +65,73 @@ socket.on("chat message", function (messageObj) {
 });
 
 socket.on("send message error", function (data) {
-    const errorMessageElement = createErrorMessageElement(data.error, data.message);
+    const errorMessageElement = createErrorMessageElement(
+        data.error,
+        data.message
+    );
     messagesElement.appendChild(errorMessageElement);
 
     messagesElement.scrollTop = messagesElement.scrollHeight;
-})
+});
 
+leaveRoomForm.addEventListener("submit", function () {
+    socket.emit("user leave room", myUsername);
+});
 
 function createMessageElement(username, time, content) {
-    const messageElement = document.createElement("div");
-    const messageHeader = document.createElement("div");
-    const userElement = document.createElement("span");
-    const timeElement = document.createElement("span");
-    const contentElement = document.createElement("div");
-    const p = document.createElement("p");
-
-    messageHeader.className = "message-header";
-    userElement.className = "username";
-    timeElement.className = "time";
+    let messageElement, messageString;
 
     if (username == myUsername) {
-        messageHeader.appendChild(timeElement);
-        messageHeader.appendChild(userElement);
-        messageElement.className = "message d-flex align-items-end flex-column";
-        contentElement.className = "my-message content text-break";
+        messageString = `<div class="message d-flex align-items-end flex-column">
+                            <div class="message-header">
+                                <span class="time">${time}</span>
+                                <span class="username">${username}</span>
+                            </div>
+                            <div class="my-message content text-break">
+                                <p>${content}</p>
+                            </div>
+                        </div>`;
     } else {
-        messageHeader.appendChild(userElement);
-        messageHeader.appendChild(timeElement);
-        messageElement.className =
-            "message d-flex align-items-start flex-column";
-        contentElement.className = "not-my-message content text-break";
+        messageString = `<div class="message d-flex align-items-start flex-column">
+                            <div class="message-header">
+                            <span class="username">${username}</span>
+                                <span class="time">${time}</span>
+                            </div>
+                            <div class="not-my-message content text-break">
+                                <p>${content}</p>
+                            </div>
+                        </div>`;
     }
 
-    contentElement.appendChild(p);
-    messageElement.appendChild(messageHeader);
-    messageElement.appendChild(contentElement);
-
-    userElement.textContent = username;
-    timeElement.textContent = time;
-
-    p.textContent = content;
+    messageElement = htmlToElement(messageString);
 
     return messageElement;
 }
 
 function createErrorMessageElement(error, messageContent) {
-    const errorMessageElement = createMessageElement(myUsername, "", messageContent);
+    const errorMessageElement = createMessageElement(
+        myUsername,
+        "",
+        messageContent
+    );
     console.log(errorMessageElement);
-    errorMessageElement.querySelector(".time").remove()
-    errorMessageElement.querySelector(".username").remove()
+    errorMessageElement.querySelector(".time").remove();
+    errorMessageElement.querySelector(".username").remove();
     errorMessageElement.className += " error";
 
     const errorElement = document.createElement("span");
     errorElement.textContent = error;
 
-    errorMessageElement.querySelector(".message-header").appendChild(errorElement);
+    errorMessageElement
+        .querySelector(".message-header")
+        .appendChild(errorElement);
 
     return errorMessageElement;
+}
+
+function htmlToElement(html) {
+    var template = document.createElement("template");
+    html = html.trim();
+    template.innerHTML = html;
+    return template.content.firstChild;
 }

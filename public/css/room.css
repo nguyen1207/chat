@@ -143,3 +143,11 @@ p {
 .error .message-header {
 	color: red;
 }
+
+.online-status {
+	color: gray;
+}
+
+.online {
+	color: rgb(36, 216, 36);
+}
