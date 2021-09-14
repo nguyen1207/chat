@@ -7,6 +7,7 @@ const {
     joinRoom,
     getJoinedRoom,
     findRoom,
+    isJoinedRoom,
     leaveRoom,
     deleteEmptyRoom,
     loadOldMessages,
@@ -15,20 +16,30 @@ const {
 
 const { decryptMessage } = require("../utils/encryptMessage.js");
 const formatTime = require("../utils/formatTime.js");
+const ApiError = require("../error/ApiError.js");
 
 module.exports = {
     // GET /
     home(req, res, next) {
         const username = req.session.username;
-        getJoinedRoom(username).then((data) => {
-            const rooms = data.rows;
+        getJoinedRoom(username)
+            .then((data) => {
+                const rooms = data.rows;
 
-            res.render("home.ejs", {
-                rooms,
-                title: "Chatdee",
-                username,
+                res.render("home.ejs", {
+                    rooms,
+                    title: "Chatdee",
+                    username,
+                });
+            })
+            .catch((err) => {
+                console.log(err);
+                return next(
+                    ApiError.internalError(
+                        "Cannot load your rooms. Please try again"
+                    )
+                );
             });
-        });
     },
 
     // GET /register
@@ -48,19 +59,21 @@ module.exports = {
 
         // Validating
         if (!username) {
-            return res.status(400).json({ error: "Username cannot be blank" });
+            return next(ApiError.badReq("Username cannot be blank"));
         }
 
         if (username.length > 20) {
-            return res
-                .status(400)
-                .json({ eror: "Username cannot exceed 20 characters" });
+            return next(
+                ApiError.badReq("Username cannot exceed 20 characters")
+            );
         }
 
         if (!password.match(passwordRequirement)) {
-            return res.status(400).json({
-                error: "Password must contain at least eight characters, one uppercase letter, one lowercase letter and one number",
-            });
+            return next(
+                ApiError.badReq(
+                    "Password must contain at least eight characters, one uppercase letter, one lowercase letter and one number"
+                )
+            );
         }
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -72,9 +85,15 @@ module.exports = {
             .catch((err) => {
                 console.log(err);
                 if (err.code == "23505") {
-                    res.status(400).json({
-                        error: "Username has already been taken",
-                    });
+                    return next(
+                        ApiError.badReq("Username has already been taken")
+                    );
+                } else {
+                    return next(
+                        ApiError.internalError(
+                            "Cannot register now. Please try again"
+                        )
+                    );
                 }
             });
     },
@@ -90,7 +109,7 @@ module.exports = {
         const password = req.body.password.trim();
 
         if (username.length == 0 || password.length == 0) {
-            return res.status(400).json({ error: "Please enter both fields" });
+            return next(ApiError.badReq("Please enter both fields"));
         }
 
         try {
@@ -99,24 +118,22 @@ module.exports = {
 
             // Validate username
             if (!person) {
-                return res
-                    .status(400)
-                    .json({ error: "Username or password is invalid" });
+                return next(ApiError.badReq("Username or password is invalid"));
             }
 
             // Validate password
             const isMatch = await bcrypt.compare(password, person.password);
 
             if (!isMatch) {
-                return res
-                    .status(400)
-                    .json({ error: "Username or password is invalid" });
+                return next(ApiError.badReq("Username or password is invalid"));
             }
 
             req.session.username = person.username;
             res.status(200).json({ message: "success" });
         } catch (err) {
-            res.status(500).json({ error: "Login error" });
+            return next(
+                ApiError.internalError("Cannot log in now. Please try again")
+            );
         }
     },
 
@@ -141,7 +158,9 @@ module.exports = {
 
             res.redirect(`/${room.roomid}`);
         } catch (err) {
-            res.status(500).json({ error: "Create room error" });
+            return next(
+                ApiError.internalError("Create room error. Please try again")
+            );
         }
     },
 
@@ -155,19 +174,30 @@ module.exports = {
 
             res.json(room);
         } catch (err) {
-            console.log(err);
-            res.status(400).json({ error: err.message });
+            if (err.status) {
+                return next(ApiError.badReq(err.message));
+            }
+            return next(
+                ApiError.internalError("Create room error. Please try again")
+            );
         }
     },
 
     // GET /:roomId
     async room(req, res, next) {
         try {
+            const username = req.session.username;
             const roomId = req.params.roomId;
             const room = await findRoom(roomId);
 
             if (!room) {
-                return res.status(404).json({ error: "Room not found" });
+                return next();
+            }
+
+            // Fix user did not in room but can view messages in that room
+            const isJoined = await isJoinedRoom(username, roomId);
+            if(!isJoined) {
+                return next();
             }
 
             const messagesData = await loadOldMessages(roomId);
@@ -192,8 +222,11 @@ module.exports = {
                 members,
             });
         } catch (err) {
-            console.log(err);
-            res.status(500).json(err);
+            return next(
+                ApiError.internalError(
+                    "Cannot connect to this room now. Please try again"
+                )
+            );
         }
     },
 
@@ -211,7 +244,11 @@ module.exports = {
             })
             .catch((err) => {
                 console.log(err);
-                res.status(500).json({ error: "Leave room error" });
+                return next(
+                    ApiError.internalError(
+                        "Cannot leave room now. Please try again"
+                    )
+                );
             });
     },
 };

@@ -84,10 +84,12 @@ async function joinRoom(username, roomId, isCreatingRoom = false) {
             }
 
             const error = new Error("You have joined this room");
+            error.status = 400;
             throw error;
         }
 
         const error = new Error("Not found room");
+        error.status = 400;
         throw error;
     }
     catch (err) {
@@ -158,6 +160,7 @@ module.exports = {
     createRoom, joinRoom, 
     getJoinedRoom, 
     findRoom, 
+    isJoinedRoom,
     leaveRoom, 
     deleteEmptyRoom, 
     loadOldMessages, 

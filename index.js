@@ -13,6 +13,7 @@ const server = require("http").createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const { userOnline, userOffline, userLeaveRoom, sendMessage } = require("./helpers/chatHelper.js")(io);
+const errorHandler = require("./middlewares/errorHandler.js");
 
 app.use(express.json());
 app.use(
@@ -42,6 +43,12 @@ app.set("layout", "./layouts/layout");
 app.use(express.static("public"));
 
 route(app);
+
+app.use(function (req, res, next) {
+    res.status(404).send("Not found");
+})
+
+app.use(errorHandler);
 
 const onConnection = function (socket) {
     socket.on("online", userOnline);
